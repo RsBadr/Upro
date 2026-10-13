@@ -32,7 +32,13 @@ class ArchitectureTest {
             .should().dependOnClassesThat().resideInAPackage("io.upro.practice..");
 
     @ArchTest
+    static final ArchRule practiceDoesNotDependOnDaily = noClasses()
+            .that().resideInAnyPackage("io.upro.catalog..", "io.upro.practice..")
+            .should().dependOnClassesThat().resideInAPackage("io.upro.daily..");
+
+    @ArchTest
     static final ArchRule adaptersDoNotTalkToEachOther = noClasses()
             .that().resideInAPackage("..infrastructure.web..")
-            .should().dependOnClassesThat().resideInAnyPackage("..infrastructure.memory..", "..infrastructure.yaml..");
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..infrastructure.jdbc..", "..infrastructure.yaml..", "..infrastructure.scheduling..");
 }

@@ -2,8 +2,13 @@ package io.upro.practice.application;
 
 import io.upro.catalog.application.CatalogService;
 import io.upro.catalog.domain.Question;
+import io.upro.practice.application.port.AnswerLog;
 import io.upro.practice.application.port.ReviewCardRepository;
+import io.upro.practice.application.port.SkillRatingRepository;
+import io.upro.practice.domain.AnswerRecord;
 import io.upro.practice.domain.ReviewCard;
+import io.upro.practice.domain.SkillRating;
+import io.upro.shared.application.Transactions;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -11,18 +16,25 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Cas d'usage d'entrainement : tirer les questions a reviser, corriger une reponse,
- * calculer la progression par module.
+ * Cas d'usage d'entrainement : tirer les questions a reviser, corriger une reponse
+ * (repetition espacee + niveau Elo + journal), calculer la progression.
  */
 public class PracticeService {
 
     private final CatalogService catalog;
     private final ReviewCardRepository cards;
+    private final SkillRatingRepository ratings;
+    private final AnswerLog answerLog;
+    private final Transactions transactions;
     private final Clock clock;
 
-    public PracticeService(CatalogService catalog, ReviewCardRepository cards, Clock clock) {
+    public PracticeService(CatalogService catalog, ReviewCardRepository cards, SkillRatingRepository ratings,
+                           AnswerLog answerLog, Transactions transactions, Clock clock) {
         this.catalog = catalog;
         this.cards = cards;
+        this.ratings = ratings;
+        this.answerLog = answerLog;
+        this.transactions = transactions;
         this.clock = clock;
     }
 
@@ -49,12 +61,24 @@ public class PracticeService {
         if (choiceIndex < 0 || choiceIndex >= question.choices().size()) {
             throw new IllegalArgumentException("Invalid choice " + choiceIndex + " for question " + questionId);
         }
-        LocalDate today = today();
-        boolean correct = question.isCorrect(choiceIndex);
-        ReviewCard updated = cardOf(questionId, today).answer(correct, today);
-        cards.save(updated);
-        return new AnswerResult(correct, question.answerIndex(), question.explanation(),
-                updated.box(), updated.nextReviewOn());
+        return transactions.inTransaction(() -> {
+            LocalDate today = today();
+            boolean correct = question.isCorrect(choiceIndex);
+
+            ReviewCard card = cardOf(questionId, today).answer(correct, today);
+            cards.save(card);
+
+            SkillRating before = ratingOf(question.moduleId());
+            SkillRating after = before.record(question.level(), correct);
+            ratings.save(after);
+
+            answerLog.append(new AnswerRecord(questionId, question.moduleId(), question.level(), correct,
+                    clock.instant(), today, before.rating(), after.rating()));
+
+            return new AnswerResult(correct, question.answerIndex(), question.explanation(),
+                    card.box(), card.nextReviewOn(), after.level().name(), round(after.rating()),
+                    round(after.rating() - before.rating()));
+        });
     }
 
     public List<ModuleProgress> progress() {
@@ -80,12 +104,30 @@ public class PracticeService {
         }).toList();
     }
 
-    private ReviewCard cardOf(String questionId, LocalDate today) {
+    public List<ModuleLevel> levels() {
+        return catalog.listModules().stream()
+                .map(module -> {
+                    SkillRating r = ratingOf(module.id());
+                    return new ModuleLevel(module.id(), r.level().name(), r.level().next().name(),
+                            (int) Math.round(r.rating()), r.answers(), r.isCalibrating(), r.progressToNextLevel());
+                })
+                .toList();
+    }
+
+    public SkillRating ratingOf(String moduleId) {
+        return ratings.find(moduleId).orElseGet(() -> SkillRating.initial(moduleId));
+    }
+
+    public ReviewCard cardOf(String questionId, LocalDate today) {
         return cards.find(questionId).orElseGet(() -> ReviewCard.fresh(questionId, today));
     }
 
     private LocalDate today() {
         return LocalDate.now(clock);
+    }
+
+    private static double round(double value) {
+        return Math.round(value * 10.0) / 10.0;
     }
 
     private record Candidate(Question question, ReviewCard card) {

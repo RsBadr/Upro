@@ -12,11 +12,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 
 /**
  * Adapter qui charge le contenu depuis {@code classpath:content/*.yml}.
@@ -94,8 +96,18 @@ public class YamlCatalogRepository implements CatalogRepository {
     record QuestionEntry(String id, String topic, Level level, String prompt,
                          List<String> choices, int answer, String explanation) {
 
+        /**
+         * Les auteurs ecrivent souvent la bonne reponse au meme endroit : on melange les choix
+         * de facon deterministe (meme ordre a chaque demarrage) pour ne pas creer de biais de position.
+         */
         Question toDomain(String moduleId) {
-            return new Question(id, moduleId, topic, level, prompt, choices, answer, explanation);
+            if (choices == null || answer < 0 || answer >= choices.size()) {
+                return new Question(id, moduleId, topic, level, prompt, choices, answer, explanation);
+            }
+            List<String> shuffled = new ArrayList<>(choices);
+            Collections.shuffle(shuffled, new Random(id.hashCode()));
+            return new Question(id, moduleId, topic, level, prompt, shuffled,
+                    shuffled.indexOf(choices.get(answer)), explanation);
         }
     }
 }

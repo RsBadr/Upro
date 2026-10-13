@@ -72,3 +72,101 @@ questions:
       An action that started in the past and continues now uses the present perfect continuous with
       "since" (point in time) or "for" (duration). Very common mistake for French speakers, especially
       in interviews ("I have been a Java developer for eight years").
+
+  - id: en-pr-review-01
+    topic: Code review
+    level: SENIOR
+    prompt: Which code review comment is the most constructive?
+    choices:
+      - "This is bad."
+      - "Nit: could we extract this into a method? It would make the retry logic easier to test."
+      - "Why would anyone write this?"
+      - "Rewrite everything."
+    answer: 1
+    explanation: >
+      Prefix minor remarks with "nit:", suggest rather than order, and explain the benefit. Useful phrases -
+      "Have you considered...?", "What do you think about...?", "Non-blocking:", "LGTM" (looks good to me).
+
+  - id: en-phrasal-verbs-01
+    topic: Vocabulary
+    level: SENIOR
+    prompt: "\"We need to roll back the release.\" What does \"roll back\" mean?"
+    choices:
+      - To deploy the release to more users
+      - To revert to the previous version
+      - To delay the release
+      - To document the release
+    answer: 1
+    explanation: >
+      Common phrasal verbs in tech - roll back / roll out (deploy progressively), set up, spin up (a server),
+      tear down, look into (investigate), follow up, sign off (approve).
+
+  - id: en-email-01
+    topic: Writing
+    level: SENIOR
+    prompt: Which sentence is the most appropriate to start a professional email to another team?
+    choices:
+      - "Hey guys, your API is broken again."
+      - "Hi team, we're seeing intermittent 503 errors from the billing API since 10:00 CET. Could you take a look?"
+      - "URGENT!!! FIX NOW"
+      - "Dear Sir or Madam, I hereby inform you..."
+    answer: 1
+    explanation: >
+      Be specific (what, since when, impact), polite and actionable. Avoid "guys" in mixed teams ("team",
+      "folks", "everyone"). Overly formal openings sound unnatural in tech companies.
+
+  - id: en-negotiation-01
+    topic: Meetings
+    level: LEAD
+    prompt: A product manager asks for a feature by Friday, which is not realistic. What is the best answer?
+    choices:
+      - "No."
+      - "Friday is tight for the full scope. We could ship the core flow by Friday and the reporting part next week. Would that work for you?"
+      - Say "OK" and work all weekend
+      - "That's not my problem."
+    answer: 1
+    explanation: >
+      Offer options instead of a flat refusal - scope, time, or quality trade-offs. Useful phrases -
+      "That's tight", "What if we...?", "Would that work for you?", "Let's prioritize..."
+
+  - id: en-incident-01
+    topic: Communication
+    level: LEAD
+    prompt: "In a postmortem, which sentence follows the \"blameless\" principle?"
+    choices:
+      - "John broke production by deploying on Friday."
+      - "The deployment pipeline allowed a migration without a backward-compatibility check, which caused the outage."
+      - "The junior developer made a mistake."
+      - "It was nobody's fault, let's move on."
+    answer: 1
+    explanation: >
+      A blameless postmortem focuses on systems and processes, not people, so that everyone shares
+      information openly. Typical sections - Summary, Impact, Timeline, Root cause, Action items.
+
+  - id: en-presentation-01
+    topic: Speaking
+    level: ARCHITECT
+    prompt: You present an architecture proposal to executives. How do you open?
+    choices:
+      - With a detailed class diagram
+      - "With the business problem and the recommendation: \"Our checkout fails under peak load. I recommend X, which costs Y and reduces incidents by Z.\""
+      - With the history of the codebase since 2012
+      - With a list of every technology considered
+    answer: 1
+    explanation: >
+      Bottom line up front (BLUF) - executives need the problem, the recommendation, the cost and the risk.
+      Keep details for the appendix and the Q&A.
+
+  - id: en-rfc-01
+    topic: Writing
+    level: ARCHITECT
+    prompt: "In an RFC or design doc, what does the \"Non-goals\" section describe?"
+    choices:
+      - Features that failed in the past
+      - What this proposal deliberately does not address, to keep the scope clear
+      - The team members who won't work on it
+      - Bugs that won't be fixed
+    answer: 1
+    explanation: >
+      Explicit non-goals prevent scope creep and endless debates. A typical design doc - Context, Goals,
+      Non-goals, Proposal, Alternatives considered, Risks, Rollout plan.

@@ -2,6 +2,7 @@ package io.upro.practice.infrastructure.web;
 
 import io.upro.catalog.domain.Question;
 import io.upro.practice.application.AnswerResult;
+import io.upro.practice.application.ModuleLevel;
 import io.upro.practice.application.ModuleProgress;
 import io.upro.practice.application.PracticeService;
 import jakarta.validation.Valid;
@@ -45,6 +46,11 @@ class PracticeController {
     @GetMapping("/progress")
     List<ModuleProgress> progress() {
         return practice.progress();
+    }
+
+    @GetMapping("/levels")
+    List<ModuleLevel> levels() {
+        return practice.levels();
     }
 
     /** Vue exposee au client : surtout pas la bonne reponse. */

@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:upro-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+
+upro:
+  daily:
+    # Pas de traitement planifie pendant les tests
+    cron: "-"

@@ -76,3 +76,108 @@ questions:
       Toujours mesurer avant d'optimiser : logs GC, JFR, taux d'allocation. ZGC (generationnel par defaut
       depuis Java 23) vise des pauses sub-milliseconde independantes de la taille du heap. Serial GC est
       pour les petits heaps mono-coeur ; System.gc() est une anti-pattern.
+
+  - id: java-optional-01
+    topic: Optional
+    level: CONFIRMED
+    prompt: Quel usage d'Optional est considere comme une bonne pratique ?
+    choices:
+      - Comme type de champ d'une entite JPA
+      - Comme type de retour d'une methode qui peut ne pas trouver de resultat
+      - Comme parametre de methode pour rendre un argument facultatif
+      - Pour remplacer toutes les references nullables, y compris dans les collections
+    answer: 1
+    explanation: >
+      Optional a ete concu comme type de retour pour signaler explicitement l'absence possible de valeur
+      (findById...). En champ ou en parametre, il alourdit l'API sans benefice ; une collection vide vaut
+      mieux qu'un Optional<List>. Eviter aussi optional.get() sans verification : preferer orElse/orElseThrow/map.
+
+  - id: java-streams-01
+    topic: Streams
+    level: SENIOR
+    prompt: Pourquoi faut-il etre prudent avec `parallelStream()` dans une application serveur ?
+    choices:
+      - Il est toujours plus lent qu'un stream sequentiel
+      - Il utilise le ForkJoinPool commun partage par toute la JVM ; des taches bloquantes peuvent affamer le reste de l'application
+      - Il ne fonctionne pas avec les ArrayList
+      - Il desactive le garbage collector pendant l'execution
+    answer: 1
+    explanation: >
+      Les parallel streams s'executent dans ForkJoinPool.commonPool(). Des operations bloquantes (I/O) ou
+      longues y monopolisent les threads de toute la JVM. Ils ne sont rentables que pour du calcul CPU sur
+      de gros volumes, avec des sources bien decoupables et sans etat partage. Mesurer avant d'adopter.
+
+  - id: java-memory-model-01
+    topic: Concurrence
+    level: LEAD
+    prompt: Un booleen `running` est lu en boucle par un thread et passe a false par un autre, mais la boucle ne s'arrete jamais. Cause la plus probable ?
+    choices:
+      - Le booleen devrait etre un Boolean
+      - Absence de relation happens-before - le champ doit etre volatile (ou acces synchronise / AtomicBoolean)
+      - Le garbage collector a supprime la variable
+      - Il faut appeler Thread.yield() dans la boucle
+    answer: 1
+    explanation: >
+      Le Java Memory Model ne garantit la visibilite d'une ecriture entre threads qu'en presence d'une
+      relation happens-before (volatile, synchronized, java.util.concurrent...). Sans elle, le JIT peut
+      hisser la lecture hors de la boucle. volatile suffit pour un drapeau ; pas pour un compteur (count++ n'est pas atomique).
+
+  - id: java-jfr-01
+    topic: Performance
+    level: LEAD
+    prompt: Une API Java en production devient lente par intermittence. Quel outil permet de diagnostiquer avec un surcout faible, directement en prod ?
+    choices:
+      - Ajouter des System.out.println partout
+      - Java Flight Recorder (JFR), analyse avec JDK Mission Control
+      - Lancer un debugger pas a pas sur la prod
+      - Redemarrer le serveur toutes les heures
+    answer: 1
+    explanation: >
+      JFR est integre a la JVM, avec un surcout generalement inferieur a 1-2 % : allocations, GC, locks,
+      I/O, hot methods, threads bloques. A combiner avec les metriques applicatives et les traces distribuees
+      pour situer le probleme (CPU, GC, contention, dependance lente).
+
+  - id: java-modules-archi-01
+    topic: Modularite
+    level: ARCHITECT
+    prompt: Pour garantir les frontieres entre modules d'un gros monolithe Java, quelle approche est la plus pragmatique ?
+    choices:
+      - Se fier aux conventions de nommage des packages
+      - Modules Maven/Gradle separes avec dependances explicites, completes par des tests d'architecture (ArchUnit, Spring Modulith)
+      - Tout mettre dans un seul package pour simplifier
+      - Interdire les imports par une regle orale
+    answer: 1
+    explanation: >
+      Les frontieres non verifiees s'erodent. Des modules de build rendent les dependances explicites et
+      les cycles impossibles ; ArchUnit ou Spring Modulith verifient les regles plus fines. JPMS (module-info)
+      est possible mais souvent couteux avec l'ecosysteme (reflexion, frameworks).
+
+  - id: java-version-strategy-01
+    topic: Strategie technique
+    level: ARCHITECT
+    prompt: Une organisation a 40 services encore en Java 11. Quelle strategie de montee de version est la plus defendable ?
+    choices:
+      - Attendre que tous les services soient reecrits
+      - Viser la derniere LTS, outiller la migration (OpenRewrite, CI multi-JDK), commencer par un service pilote puis industrialiser
+      - Migrer tous les services le meme week-end
+      - Sauter directement a la derniere version non-LTS
+    answer: 1
+    explanation: >
+      Un architecte reduit le risque et le cout : alignement sur une LTS (21 ou 25), recettes automatisees
+      (OpenRewrite), pilote pour identifier les pieges (librairies, flags JVM supprimes), puis plan par vagues
+      avec indicateurs. Le gain (perf, securite, virtual threads, support) doit etre explicite pour le business.
+
+  - id: java-immutability-arch-01
+    topic: Conception
+    level: ARCHITECT
+    prompt: Pourquoi privilegier les objets immuables dans le coeur metier d'un systeme concurrent ?
+    choices:
+      - Ils consomment moins de memoire
+      - Ils sont thread-safe par construction, faciles a raisonner et a partager, et evitent les effets de bord
+      - Ils sont obligatoires avec Spring
+      - Ils accelerent la serialisation JSON
+    answer: 1
+    explanation: >
+      Un objet immuable ne peut pas etre observe dans un etat incoherent : pas de synchronisation, pas de
+      copie defensive, pas d'aliasing surprise. Records et collections immuables (List.copyOf) le rendent
+      peu couteux. Dans ce projet, ReviewCard et SkillRating renvoient une nouvelle instance a chaque reponse.

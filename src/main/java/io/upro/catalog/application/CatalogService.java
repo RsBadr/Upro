@@ -5,6 +5,7 @@ import io.upro.catalog.domain.LearningModule;
 import io.upro.catalog.domain.Question;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Cas d'usage de consultation du catalogue. Volontairement sans dependance
@@ -29,6 +30,10 @@ public class CatalogService {
     public List<Question> questionsOf(String moduleId) {
         getModule(moduleId);
         return repository.findQuestionsByModule(moduleId);
+    }
+
+    public Optional<Question> findQuestion(String questionId) {
+        return repository.findQuestion(questionId);
     }
 
     public Question getQuestion(String questionId) {

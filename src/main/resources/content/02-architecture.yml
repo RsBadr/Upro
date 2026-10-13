@@ -76,3 +76,108 @@ questions:
       En cas de partition (P), on ne peut garantir a la fois la coherence forte et la disponibilite.
       PACELC complete : sans partition (Else), on arbitre entre Latence et Coherence. Savoir expliciter
       ce trade-off est attendu d'un architecte.
+
+  - id: archi-layers-01
+    topic: Bases
+    level: CONFIRMED
+    prompt: Dans une architecture en couches classique, que doit contenir la couche "service" ?
+    choices:
+      - Le SQL et le mapping des tables
+      - La logique applicative et metier, orchestrant les acces aux donnees
+      - Le HTML des pages
+      - La configuration du serveur web
+    answer: 1
+    explanation: >
+      Controller (entree HTTP) -> Service (regles et orchestration) -> Repository (acces aux donnees).
+      Anti-pattern frequent : la logique metier dans les controllers, ou des services "anemiques" qui ne
+      font que deleguer.
+
+  - id: archi-rest-01
+    topic: API REST
+    level: CONFIRMED
+    prompt: Quel code HTTP renvoyer quand une requete est bien formee mais que la ressource demandee n'existe pas ?
+    choices:
+      - 200 avec un corps vide
+      - 404 Not Found
+      - 500 Internal Server Error
+      - 400 Bad Request
+    answer: 1
+    explanation: >
+      404 pour une ressource absente, 400 pour une requete invalide, 409 pour un conflit d'etat, 422 pour
+      une validation metier selon les conventions, 5xx pour une erreur serveur. Le format Problem Details
+      (RFC 9457) standardise le corps des erreurs, comme dans l'API d'Upro.
+
+  - id: archi-cache-01
+    topic: Performance
+    level: CONFIRMED
+    prompt: Quel est le risque principal quand on ajoute un cache devant une base de donnees ?
+    choices:
+      - Le cache rend la base inutile
+      - Servir des donnees perimees ; il faut une strategie d'invalidation ou de TTL adaptee au besoin metier
+      - Le cache ralentit toujours les lectures
+      - Les caches ne fonctionnent pas en Java
+    answer: 1
+    explanation: >
+      "There are only two hard things in Computer Science: cache invalidation and naming things."
+      Choisir TTL, invalidation sur ecriture ou cache-aside selon la tolerance a la donnee perimee,
+      et surveiller le taux de hit.
+
+  - id: archi-idempotency-01
+    topic: Integration
+    level: SENIOR
+    prompt: Un consommateur Kafka peut recevoir deux fois le meme message (at-least-once). Comment eviter un double traitement ?
+    choices:
+      - Esperer que cela n'arrive pas
+      - Rendre le traitement idempotent, par exemple en memorisant les identifiants de messages deja traites
+      - Desactiver les retries
+      - Augmenter le nombre de partitions
+    answer: 1
+    explanation: >
+      En systeme distribue, l'exactly-once de bout en bout est rare ; on vise at-least-once + idempotence.
+      Techniques : cle d'idempotence stockee dans la meme transaction que l'effet, upsert, operations
+      naturellement idempotentes (set plutot qu'increment).
+
+  - id: archi-resilience-01
+    topic: Resilience
+    level: SENIOR
+    prompt: Un service appelle une API externe qui devient tres lente. Quel pattern evite que tout le service s'effondre ?
+    choices:
+      - Augmenter indefiniment le timeout
+      - Timeout court + circuit breaker (+ bulkhead), avec une reponse degradee
+      - Relancer en boucle sans delai
+      - Ajouter plus de threads au pool HTTP
+    answer: 1
+    explanation: >
+      Sans timeout, les threads s'accumulent en attente et le service tombe (defaillance en cascade). Le
+      circuit breaker coupe les appels vers une dependance malade, le bulkhead isole les ressources, les
+      retries se font avec backoff exponentiel et jitter. Resilience4j les implemente en Java.
+
+  - id: archi-cqrs-01
+    topic: CQRS
+    level: LEAD
+    prompt: Dans quel cas CQRS (separation des modeles de lecture et d'ecriture) est-il justifie ?
+    choices:
+      - Dans toutes les applications CRUD
+      - Quand les besoins de lecture et d'ecriture divergent fortement (volumetrie, forme des donnees, performance)
+      - Uniquement avec de l'event sourcing
+      - Pour eviter d'ecrire des tests
+    answer: 1
+    explanation: >
+      CQRS ajoute de la complexite (deux modeles, synchronisation, coherence a terme). Il se justifie quand
+      les lectures ont des exigences tres differentes (vues denormalisees, recherche, reporting). Il n'implique
+      pas l'event sourcing, meme si les deux sont souvent combines.
+
+  - id: archi-strangler-01
+    topic: Migration
+    level: ARCHITECT
+    prompt: Comment migrer progressivement un systeme legacy critique vers une nouvelle architecture ?
+    choices:
+      - Big bang - tout reecrire puis basculer en une fois
+      - Strangler Fig - intercepter les flux et remplacer le legacy fonctionnalite par fonctionnalite
+      - Geler le legacy pendant deux ans
+      - Dupliquer toutes les donnees manuellement
+    answer: 1
+    explanation: >
+      Le pattern Strangler Fig (Fowler) place une facade devant le legacy et redirige progressivement les
+      fonctionnalites vers le nouveau systeme. Chaque etape livre de la valeur et reste reversible, a
+      l'inverse d'une reecriture big bang aux risques et delais souvent sous-estimes.

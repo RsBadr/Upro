@@ -27,13 +27,19 @@ Chaque étape est un exercice volontairement laissé à faire. Pour chacune : é
 
 ### Fondations (niveau Senior)
 - [x] Squelette hexagonal, règles ArchUnit, CI, contenu en YAML, UI minimale
-- [ ] **Persistance** : remplacer `InMemoryReviewCardRepository` par un adapter JPA + PostgreSQL + Flyway, testé avec Testcontainers. *(ports & adapters, migrations, tests d'intégration)*
+- [x] Persistance PostgreSQL + Flyway (JdbcClient), déploiement Railway
+- [x] Quiz quotidien adaptatif, niveau Elo par module, traitement quotidien et historique
+- [ ] **Testcontainers** : remplacer H2 par un vrai PostgreSQL dans les tests d'intégration. *(fidélité des tests)*
+- [ ] **Variante JPA** : réécrire un adapter avec Spring Data JPA et comparer (lisibilité, requêtes générées, N+1). *(ports & adapters : changer d'adapter sans toucher au domaine)*
+- [ ] **Calibrer la difficulté des questions** à partir des réponses (taux de réussite réel vs niveau déclaré, puis IRT). *(données, statistiques)*
 - [ ] **Nouveaux types d'exercices** : question ouverte, kata de code, « trouve le bug ». Modéliser avec une hiérarchie `sealed`. *(Java moderne, conception objet)*
 - [ ] **Contenu** : viser 30 questions par module ; ajouter un module *Spring & écosystème* et un module *Cloud & DevOps*.
 
 ### Industrialisation (niveau Lead)
 - [ ] **Sécurité** : multi-utilisateur avec Spring Security + OAuth2/OIDC (Keycloak). *(sécurité applicative)*
-- [ ] **Observabilité** : Actuator, Micrometer, OpenTelemetry, dashboard Grafana. *(prod-readiness)*
+- [ ] **Observabilité** : Micrometer, OpenTelemetry, dashboard Grafana ; métrique « quiz du jour terminé ». *(prod-readiness)*
+- [ ] **Multi-instance** : verrou distribué (ShedLock) sur le traitement quotidien, puis passage à 2 réplicas. *(systèmes distribués)*
+- [ ] **Notifications** : rappel quotidien (email ou push) si le quiz n'est pas fait. *(intégration, événements)*
 - [ ] **Conteneurisation** : Dockerfile, docker-compose (app + Postgres + Keycloak), déploiement sur un cloud. *(DevOps)*
 - [ ] **Qualité** : Sonar, mutation testing (PIT), Spotless/Checkstyle en CI. *(standards d'équipe)*
 
@@ -45,6 +51,6 @@ Chaque étape est un exercice volontairement laissé à faire. Pour chacune : é
 
 ## 3. Rituel proposé
 
-- **Quotidien (15 min)** : réviser les questions dues dans Upro.
+- **Quotidien (10-15 min)** : faire le quiz du jour dans Upro.
 - **Hebdomadaire (2 h)** : une case de la roadmap, ou 5 nouvelles questions écrites à partir d'une lecture.
-- **Trimestriel** : bilan (niveaux maîtrisés via `/api/practice/progress`) et mise à jour de cette roadmap.
+- **Trimestriel** : bilan à partir de l'historique (évolution du niveau par module) et mise à jour de cette roadmap.
