@@ -53,4 +53,11 @@ class UproApplicationTests {
                 .content("{\"questionId\":\"java-records-01\",\"choice\":9}"))
                 .hasStatus(400);
     }
+
+    @Test
+    void exposesHealthEndpointForRailway() {
+        assertThat(mvc.get().uri("/actuator/health"))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$.status").isEqualTo("UP");
+    }
 }

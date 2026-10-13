@@ -5,6 +5,21 @@ spring:
     problemdetails:
       enabled: true
 
+# Railway fournit le port via la variable d'environnement PORT
+server:
+  port: ${PORT:8080}
+
+# Expose /actuator/health pour les health checks Railway
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
 upro:
   content:
     location: classpath:content/*.yml
