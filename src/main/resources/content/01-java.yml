@@ -1,0 +1,78 @@
+id: java
+title: Java & JVM
+description: Langage moderne (17 -> 25), concurrence, JVM, performance.
+questions:
+  - id: java-records-01
+    topic: Records
+    level: CONFIRMED
+    prompt: Que genere automatiquement le compilateur pour un `record Point(int x, int y)` ?
+    choices:
+      - Uniquement un constructeur canonique
+      - Constructeur canonique, accesseurs x()/y(), equals, hashCode et toString
+      - Des getters getX()/getY() et des setters
+      - Rien, il faut annoter avec Lombok @Data
+    answer: 1
+    explanation: >
+      Un record est une classe finale porteuse de donnees immuables. Le compilateur genere
+      le constructeur canonique, des accesseurs nommes comme les composants (x(), pas getX()),
+      ainsi que equals/hashCode/toString bases sur tous les composants. Pas de setters.
+
+  - id: java-virtual-threads-01
+    topic: Concurrence
+    level: SENIOR
+    prompt: Dans quel cas les virtual threads (Java 21) apportent-ils le plus de gain ?
+    choices:
+      - Calcul CPU intensif (compression, crypto)
+      - Applications I/O-bound avec beaucoup de taches bloquantes concurrentes (appels HTTP, JDBC)
+      - Remplacer les parallel streams
+      - Reduire la consommation memoire du heap
+    answer: 1
+    explanation: >
+      Les virtual threads rendent les blocages I/O peu couteux : quand un thread virtuel bloque,
+      il libere son carrier thread. Ils augmentent le debit des applis I/O-bound, pas la vitesse
+      du calcul CPU. Attention aux sections `synchronized` longues avec I/O (pinning, corrige en Java 24)
+      et aux ThreadLocal couteux.
+
+  - id: java-sealed-01
+    topic: Sealed & pattern matching
+    level: SENIOR
+    prompt: Quel est l'interet principal de combiner une interface `sealed` avec un `switch` sur pattern ?
+    choices:
+      - Ameliorer les performances a l'execution
+      - Le compilateur verifie l'exhaustivite du switch, sans branche `default`
+      - Permettre l'heritage multiple
+      - Rendre les classes serialisables
+    answer: 1
+    explanation: >
+      Avec une hierarchie scellee, le compilateur connait tous les sous-types. Un switch sans `default`
+      qui les couvre tous est exhaustif ; ajouter un nouveau sous-type casse la compilation aux endroits
+      a mettre a jour. C'est la base des types algebriques (ADT) en Java.
+
+  - id: java-hashmap-01
+    topic: Collections
+    level: CONFIRMED
+    prompt: Que se passe-t-il si une cle mutable utilisee dans une HashMap change apres insertion (et que son hashCode change) ?
+    choices:
+      - La HashMap se reindexe automatiquement
+      - Une ConcurrentModificationException est levee
+      - L'entree devient en pratique introuvable via get(), tout en restant dans la map
+      - La cle est supprimee
+    answer: 2
+    explanation: >
+      L'entree reste rangee dans le bucket calcule a l'insertion. Avec un nouveau hashCode, get() cherche
+      dans un autre bucket : fuite memoire et bugs subtils. Regle : cles immuables (String, records...).
+
+  - id: java-gc-01
+    topic: JVM
+    level: LEAD
+    prompt: Une API a des pauses GC de plusieurs centaines de ms avec un heap de 32 Go. Quelle piste est la plus pertinente en premier ?
+    choices:
+      - Passer a Serial GC
+      - Analyser les logs GC (-Xlog:gc*) et evaluer ZGC generationnel pour des pauses < 1 ms
+      - Appeler System.gc() regulierement
+      - Doubler le heap sans mesurer
+    answer: 1
+    explanation: >
+      Toujours mesurer avant d'optimiser : logs GC, JFR, taux d'allocation. ZGC (generationnel par defaut
+      depuis Java 23) vise des pauses sub-milliseconde independantes de la taille du heap. Serial GC est
+      pour les petits heaps mono-coeur ; System.gc() est une anti-pattern.

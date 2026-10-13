@@ -1,0 +1,73 @@
+id: leadership
+title: Leadership & Soft skills
+description: Tech lead, staff engineer, mentoring, communication, influence sans autorite.
+questions:
+  - id: lead-staff-01
+    topic: Carriere
+    level: LEAD
+    prompt: Quelle difference principale entre un Senior developer et un Staff/Principal engineer ?
+    choices:
+      - Le Staff code plus vite
+      - Le Staff a un impact au-dela de son equipe (strategie technique, alignement inter-equipes, standards)
+      - Le Staff manage des personnes
+      - Aucune, c'est un titre honorifique
+    answer: 1
+    explanation: >
+      Le parcours "individual contributor" senior se mesure a l'etendue de l'impact : equipe -> plusieurs
+      equipes -> organisation. Lecture recommandee - "Staff Engineer" (Will Larson), "The Staff Engineer's Path" (Tanya Reilly).
+
+  - id: lead-estimation-01
+    topic: Communication
+    level: LEAD
+    prompt: Un manager vous demande une date de livraison ferme sur un sujet tres incertain. Que faire ?
+    choices:
+      - Donner une date optimiste pour faire plaisir
+      - Refuser de repondre
+      - Donner une fourchette avec hypotheses et risques, et proposer un spike pour reduire l'incertitude
+      - Multiplier son estimation par 3 sans rien dire
+    answer: 2
+    explanation: >
+      Rendre l'incertitude visible et proposer un moyen de la reduire construit la confiance.
+      Une estimation est une prevision, pas un engagement.
+
+  - id: lead-mentoring-01
+    topic: Mentoring
+    level: LEAD
+    prompt: Un developpeur junior est bloque depuis une journee. Quelle approche de mentoring est la plus formatrice ?
+    choices:
+      - Prendre le clavier et resoudre le probleme
+      - Poser des questions pour l'aider a raisonner, puis faire du pair programming si besoin
+      - Lui dire de chercher encore seul
+      - Reassigner la tache
+    answer: 1
+    explanation: >
+      Le questionnement guide fait progresser plus durablement que la solution donnee. Mettre aussi en place
+      une regle d'equipe - "bloque plus de X heures = on demande de l'aide".
+
+  - id: lead-tech-debt-01
+    topic: Dette technique
+    level: ARCHITECT
+    prompt: Comment obtenir du temps pour rembourser de la dette technique aupres du produit ?
+    choices:
+      - Le faire en cachette
+      - Traduire la dette en impact business mesurable (lead time, incidents, cout) et proposer un plan incremental
+      - Exiger une reecriture complete
+      - Attendre une crise
+    answer: 1
+    explanation: >
+      Parler le langage du business. Les metriques DORA (lead time, deployment frequency, change failure
+      rate, MTTR) sont un bon support.
+
+  - id: lead-decision-01
+    topic: Prise de decision
+    level: ARCHITECT
+    prompt: Quelle pratique aide le plus une organisation a ne pas reprendre sans cesse les memes debats techniques ?
+    choices:
+      - Laisser decider la personne la plus senior
+      - Documenter les decisions et leur contexte (ADR), avec les alternatives ecartees
+      - Ne rien ecrire pour rester agile
+      - Voter a main levee
+    answer: 1
+    explanation: >
+      Une decision documentee avec son contexte peut etre revisitee quand le contexte change, plutot que
+      re-debattue a chaque nouvel arrivant.

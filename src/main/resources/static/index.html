@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upro</title>
+  <style>
+    :root { --bg:#f7f7f5; --card:#fff; --fg:#1d1d1f; --muted:#6b6b70; --accent:#2b59c3; --ok:#1f7a3f; --ko:#b3261e; --line:#e3e3e0; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#141416; --card:#1e1e22; --fg:#ececf0; --muted:#9a9aa3; --accent:#7ea2ff; --ok:#5cc98a; --ko:#ff8a80; --line:#2e2e34; } }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 24px 16px; }
+    h1 { margin: 0 0 4px; } .muted { color: var(--muted); }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin-top:16px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+    button { font:inherit; cursor:pointer; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--fg); padding:10px 12px; text-align:left; width:100%; }
+    button:hover:not(:disabled) { border-color: var(--accent); }
+    .choices { display:grid; gap:8px; margin-top:12px; }
+    .ok { border-color: var(--ok) !important; color: var(--ok); } .ko { border-color: var(--ko) !important; color: var(--ko); }
+    .tag { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .link { background:none; border:none; color:var(--accent); padding:0; width:auto; }
+    .bar { height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin-top:8px; } .bar > i { display:block; height:100%; background:var(--accent); }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Upro</h1>
+  <p class="muted">Entrainement quotidien : Java, architecture, best practices, anglais, leadership.</p>
+  <div id="app"></div>
+</main>
+<script>
+const app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const api = async (url, opts) => { const r = await fetch(url, opts); if (!r.ok) throw new Error((await r.json()).detail || r.status); return r.json(); };
+
+async function home() {
+  const [modules, progress] = await Promise.all([api('/api/modules'), api('/api/practice/progress')]);
+  const byId = Object.fromEntries(progress.map(p => [p.moduleId, p]));
+  app.innerHTML = '<div class="grid">' + modules.map(m => {
+    const p = byId[m.id];
+    const pct = p.totalQuestions ? Math.round(100 * p.mastered / p.totalQuestions) : 0;
+    return `<div class="card"><strong>${esc(m.title)}</strong><p class="muted">${esc(m.description)}</p>
+      <div class="muted">${p.dueToday} a reviser · ${p.seen}/${p.totalQuestions} vues · ${pct}% maitrise</div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <p><button data-module="${esc(m.id)}">S'entrainer</button></p></div>`;
+  }).join('') + '</div>';
+  app.querySelectorAll('[data-module]').forEach(b => b.onclick = () => practice(b.dataset.module));
+}
+
+async function practice(moduleId) {
+  const [q] = await api(`/api/practice/${encodeURIComponent(moduleId)}/next?count=1`);
+  if (!q) { app.innerHTML = '<div class="card">Rien a reviser aujourd\'hui dans ce module. Reviens demain !<p><button class="link" id="back">&larr; Modules</button></p></div>'; document.getElementById('back').onclick = home; return; }
+  app.innerHTML = `<div class="card"><div class="tag">${esc(q.topic)} · ${esc(q.level)}</div>
+    <p><strong>${esc(q.prompt)}</strong></p>
+    <div class="choices">${q.choices.map((c, i) => `<button data-i="${i}">${esc(c)}</button>`).join('')}</div>
+    <div id="feedback"></div><p><button class="link" id="back">&larr; Modules</button></p></div>`;
+  document.getElementById('back').onclick = home;
+  const buttons = [...app.querySelectorAll('[data-i]')];
+  buttons.forEach(b => b.onclick = async () => {
+    const res = await api('/api/practice/answers', { method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ questionId: q.id, choice: Number(b.dataset.i) }) });
+    buttons.forEach(x => x.disabled = true);
+    buttons[res.correctChoice].classList.add('ok');
+    if (!res.correct) b.classList.add('ko');
+    document.getElementById('feedback').innerHTML = `<p class="${res.correct ? 'ok' : 'ko'}"><strong>${res.correct ? 'Correct' : 'Incorrect'}</strong></p>
+      <p>${esc(res.explanation)}</p><p class="muted">Boite ${res.box} · prochaine revision le ${esc(res.nextReviewOn)}</p>
+      <button id="next">Question suivante &rarr;</button>`;
+    document.getElementById('next').onclick = () => practice(moduleId);
+  });
+}
+
+home().catch(e => app.textContent = 'Erreur : ' + e.message);
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: upro
+  mvc:
+    problemdetails:
+      enabled: true
+
+upro:
+  content:
+    location: classpath:content/*.yml

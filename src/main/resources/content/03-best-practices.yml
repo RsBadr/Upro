@@ -1,0 +1,73 @@
+id: best-practices
+title: Best practices & Qualite
+description: Clean code, SOLID, tests, revue de code, securite, observabilite.
+questions:
+  - id: bp-solid-dip-01
+    topic: SOLID
+    level: CONFIRMED
+    prompt: Que dit le principe d'inversion de dependances (DIP) ?
+    choices:
+      - Les classes doivent avoir une seule responsabilite
+      - Les modules de haut niveau ne dependent pas des modules de bas niveau ; les deux dependent d'abstractions
+      - Une sous-classe doit pouvoir remplacer sa classe mere
+      - Il faut toujours utiliser un framework d'injection
+    answer: 1
+    explanation: >
+      Le DIP fait pointer les dependances vers les abstractions possedees par le code metier. L'injection
+      de dependances (Spring) n'est qu'un moyen technique de l'appliquer, pas le principe lui-meme.
+
+  - id: bp-testing-pyramid-01
+    topic: Tests
+    level: SENIOR
+    prompt: Un test d'integration avec la base echoue de facon aleatoire en CI. Quelle approche est la meilleure ?
+    choices:
+      - Ajouter @Disabled
+      - Relancer automatiquement 3 fois
+      - Identifier la source du non-determinisme (ordre, donnees partagees, temps, concurrence) et l'isoler (Testcontainers, Clock injectee, donnees par test)
+      - Supprimer le test
+    answer: 2
+    explanation: >
+      Un test flaky detruit la confiance dans la CI. Causes classiques : etat partage entre tests, dependance
+      a l'heure (d'ou la Clock injectee dans PracticeService), ordre d'execution, async sans attente explicite.
+
+  - id: bp-observability-01
+    topic: Observabilite
+    level: LEAD
+    prompt: Quels sont les trois piliers classiques de l'observabilite ?
+    choices:
+      - Logs, metriques, traces
+      - CPU, RAM, disque
+      - Tests unitaires, integration, e2e
+      - Dev, recette, prod
+    answer: 0
+    explanation: >
+      Logs (evenements), metriques (agregats numeriques, ex. Micrometer/Prometheus), traces distribuees
+      (OpenTelemetry). Un lead doit savoir definir des SLI/SLO et des alertes basees sur le symptome.
+
+  - id: bp-security-01
+    topic: Securite
+    level: SENIOR
+    prompt: Quelle est la protection de base contre l'injection SQL en Java ?
+    choices:
+      - Echapper les quotes a la main
+      - Utiliser des requetes parametrees (PreparedStatement, parametres JPA nommes)
+      - Valider la longueur des champs
+      - Utiliser HTTPS
+    answer: 1
+    explanation: >
+      Les requetes parametrees separent le code SQL des donnees. A connaitre aussi : OWASP Top 10,
+      gestion des secrets, dependances vulnerables (OWASP Dependency-Check, Dependabot).
+
+  - id: bp-code-review-01
+    topic: Revue de code
+    level: LEAD
+    prompt: En tant que lead, quel comportement en revue de code a le plus d'impact sur l'equipe ?
+    choices:
+      - Bloquer toutes les PR pour des questions de style
+      - Automatiser le style (formatter, linters) et concentrer la revue sur la conception, la lisibilite et les risques, en expliquant le pourquoi
+      - Ne pas faire de revue pour aller plus vite
+      - Reecrire soi-meme le code des autres
+    answer: 1
+    explanation: >
+      La revue est un outil de partage de connaissance. Automatiser ce qui peut l'etre, distinguer
+      bloquant / suggestion (nit), et justifier ses remarques font monter l'equipe en competence.

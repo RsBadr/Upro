@@ -1,0 +1,74 @@
+id: english
+title: Technical English
+description: Vocabulary, meetings, writing ADRs and design docs, interviews in English.
+questions:
+  - id: en-vocab-01
+    topic: Vocabulary
+    level: CONFIRMED
+    prompt: "What does \"to deprecate\" an API mean?"
+    choices:
+      - To delete it immediately
+      - To mark it as discouraged and scheduled for future removal, while it still works
+      - To make it faster
+      - To document it
+    answer: 1
+    explanation: >
+      A deprecated API still works but should no longer be used; it will likely be removed in a future
+      version. Related words - "sunset", "end-of-life (EOL)", "breaking change", "backward compatible".
+
+  - id: en-false-friend-01
+    topic: False friends
+    level: CONFIRMED
+    prompt: "A French developer says \"I will eventually fix the bug\" meaning \"je corrigerai eventuellement le bug\". What do English speakers understand?"
+    choices:
+      - Maybe I will fix it
+      - I will fix it in the end, after some time (it is certain)
+      - I will never fix it
+      - I fixed it already
+    answer: 1
+    explanation: >
+      "Eventually" = finalement / a terme. For "eventuellement", say "possibly" or "maybe".
+      Other classic false friends - "actually" (en fait), "library" (bibliotheque, not librairie).
+
+  - id: en-meeting-01
+    topic: Meetings
+    level: LEAD
+    prompt: You disagree with an architecture proposal in a meeting. Which phrasing is the most professional?
+    choices:
+      - "This is wrong."
+      - "I see the benefits, but I have concerns about operational complexity. Could we compare it with a modular monolith?"
+      - "I don't like it."
+      - Stay silent and complain later.
+    answer: 1
+    explanation: >
+      Acknowledge, state the concern with a concrete reason, propose an alternative. Useful phrases -
+      "I'd push back on...", "What's the trade-off here?", "Could you walk me through...?"
+
+  - id: en-adr-01
+    topic: Writing
+    level: ARCHITECT
+    prompt: What are the core sections of an Architecture Decision Record (Michael Nygard's format)?
+    choices:
+      - Title, Status, Context, Decision, Consequences
+      - Introduction, Code, Conclusion
+      - Problem, Solution, Price
+      - Who, What, When
+    answer: 0
+    explanation: >
+      Writing ADRs in clear English is a key architect skill. See docs/adr in this repository and try
+      to write the next ones in English.
+
+  - id: en-grammar-01
+    topic: Grammar
+    level: CONFIRMED
+    prompt: "Which sentence is correct?"
+    choices:
+      - "I am working on this project since 2018."
+      - "I have been working on this project since 2018."
+      - "I work on this project since 2018."
+      - "I worked on this project since 2018."
+    answer: 1
+    explanation: >
+      An action that started in the past and continues now uses the present perfect continuous with
+      "since" (point in time) or "for" (duration). Very common mistake for French speakers, especially
+      in interviews ("I have been a Java developer for eight years").

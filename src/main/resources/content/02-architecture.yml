@@ -1,0 +1,78 @@
+id: architecture
+title: Architecture & Conception
+description: Hexagonal, DDD, microservices, patterns d'integration, trade-offs.
+questions:
+  - id: archi-hexagonal-01
+    topic: Architecture hexagonale
+    level: SENIOR
+    prompt: Dans une architecture hexagonale, dans quel sens vont les dependances ?
+    choices:
+      - Du domaine vers l'infrastructure
+      - De l'infrastructure (adapters) vers le domaine, via des ports definis par le coeur
+      - Du controller vers la base, directement
+      - Il n'y a pas de regle
+    answer: 1
+    explanation: >
+      Le coeur (domaine + cas d'usage) definit des ports (interfaces). Les adapters (web, BDD, messaging)
+      les implementent ou les appellent. Le domaine ne connait ni Spring ni JPA. C'est exactement ce que
+      verifie ArchitectureTest dans ce projet.
+
+  - id: archi-ddd-aggregate-01
+    topic: DDD
+    level: LEAD
+    prompt: Quelle est la responsabilite principale d'un agregat en DDD ?
+    choices:
+      - Regrouper toutes les tables d'un schema
+      - Garantir la coherence de ses invariants metier au sein d'une frontiere transactionnelle
+      - Exposer une API REST
+      - Servir de cache
+    answer: 1
+    explanation: >
+      Un agregat est une frontiere de coherence : on le modifie via sa racine, en une transaction, et il
+      protege ses invariants. Regle pratique : petits agregats, references entre agregats par identifiant,
+      coherence a terme (events) entre agregats.
+
+  - id: archi-outbox-01
+    topic: Integration
+    level: LEAD
+    prompt: Un service doit enregistrer une commande en base ET publier un evenement Kafka de maniere fiable. Quel pattern ?
+    choices:
+      - Ecrire en base puis publier dans le meme try/catch
+      - Transactional Outbox - l'evenement est ecrit dans une table outbox dans la meme transaction, puis relaye
+      - Transaction distribuee XA systematique
+      - Publier d'abord, puis ecrire en base
+    answer: 1
+    explanation: >
+      Le dual-write (base + broker) n'est pas atomique. L'Outbox ecrit l'evenement dans la meme transaction
+      locale ; un relais (polling ou CDC type Debezium) publie ensuite. Garantie at-least-once : les
+      consommateurs doivent etre idempotents.
+
+  - id: archi-microservices-01
+    topic: Microservices
+    level: ARCHITECT
+    prompt: Une equipe de 6 devs demarre un nouveau produit au domaine encore flou. Quelle recommandation est la plus defendable ?
+    choices:
+      - 15 microservices des le depart pour etre scalable
+      - Un monolithe modulaire avec des frontieres de modules claires, decoupable plus tard
+      - Un monolithe sans structure, on verra
+      - Du serverless pour tout
+    answer: 1
+    explanation: >
+      Les microservices resolvent surtout des problemes d'organisation (equipes autonomes, deploiements
+      independants) au prix d'une forte complexite operationnelle. Quand le domaine est mal connu, un
+      monolithe modulaire permet de decouvrir les bonnes frontieres a moindre cout (cf. Fowler, MonolithFirst).
+
+  - id: archi-cap-01
+    topic: Systemes distribues
+    level: ARCHITECT
+    prompt: Selon le theoreme CAP, lors d'une partition reseau, un systeme distribue doit choisir entre...
+    choices:
+      - Performance et securite
+      - Coherence (C) et disponibilite (A)
+      - Latence et debit
+      - Scalabilite et cout
+    answer: 1
+    explanation: >
+      En cas de partition (P), on ne peut garantir a la fois la coherence forte et la disponibilite.
+      PACELC complete : sans partition (Else), on arbitre entre Latence et Coherence. Savoir expliciter
+      ce trade-off est attendu d'un architecte.
