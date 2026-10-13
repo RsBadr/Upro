@@ -16,6 +16,18 @@ Prérequis : JDK 21.
 ./mvnw spring-boot:run   # puis http://localhost:8080
 ```
 
+## Déploiement (Railway)
+
+En ligne : **https://backend-production-c18d7.up.railway.app**
+
+Même modèle que `comptes-app` :
+
+- projet Railway `upro`, service `backend`, construit depuis le `Dockerfile` (build Maven multi-stage, JRE 21, utilisateur non-root) ;
+- redéploiement automatique à chaque push sur la branche suivie par Railway ;
+- health check sur `/actuator/health`, port lu depuis la variable `PORT` (fixée à `8080`).
+
+⚠️ Tant que la persistance n'est pas faite (voir roadmap), la progression est remise à zéro à chaque redéploiement.
+
 ## Modules
 
 | Module | Fichier de contenu | Cible |
