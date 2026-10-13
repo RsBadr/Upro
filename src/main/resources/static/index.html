@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upro</title>
+  <style>
+    :root { --bg:#f7f7f5; --card:#fff; --fg:#1d1d1f; --muted:#6b6b70; --accent:#2b59c3; --ok:#1f7a3f; --ko:#b3261e; --line:#e3e3e0; --soft:#eef2fb; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#141416; --card:#1e1e22; --fg:#ececf0; --muted:#9a9aa3; --accent:#7ea2ff; --ok:#5cc98a; --ko:#ff8a80; --line:#2e2e34; --soft:#232a3d; } }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+    h1 { margin: 0 0 4px; } h2 { font-size: 18px; margin: 28px 0 10px; }
+    .muted { color: var(--muted); } .small { font-size: 14px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:12px; }
+    .hero { border-color: var(--accent); }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
+    button { font:inherit; cursor:pointer; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--fg); padding:10px 12px; text-align:left; width:100%; }
+    button:hover:not(:disabled) { border-color: var(--accent); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; text-align:center; font-weight:600; }
+    .choices { display:grid; gap:8px; margin-top:12px; }
+    .ok { border-color: var(--ok) !important; color: var(--ok); } .ko { border-color: var(--ko) !important; color: var(--ko); }
+    .tag { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .badge { display:inline-block; font-size:12px; font-weight:600; padding:2px 8px; border-radius:999px; background:var(--soft); color:var(--accent); }
+    .link { background:none; border:none; color:var(--accent); padding:0; width:auto; }
+    .bar { height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin-top:6px; } .bar > i { display:block; height:100%; background:var(--accent); }
+    .row { display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; }
+    table { width:100%; border-collapse:collapse; font-size:14px; } td, th { padding:6px 4px; border-bottom:1px solid var(--line); text-align:left; } th { color:var(--muted); font-weight:500; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Upro</h1>
+  <p class="muted">Un quiz par jour, adapté à ton niveau. Objectif : Lead, Staff, Architecte.</p>
+  <div id="app"></div>
+</main>
+<script>
+const app = document.getElementById('app');
+const LEVELS = { CONFIRMED: 'Confirmé', SENIOR: 'Senior', LEAD: 'Lead', ARCHITECT: 'Architecte' };
+let titles = {};
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const api = async (url, opts) => { const r = await fetch(url, opts); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.status); return r.json(); };
+const pct = (a, b) => b ? Math.round(100 * a / b) : 0;
+const fmtDate = d => new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+const signed = n => (n > 0 ? '+' : '') + n;
+
+async function home() {
+  const [modules, quiz, levels, history] = await Promise.all([
+    api('/api/modules'), api('/api/daily'), api('/api/practice/levels'), api('/api/daily/history?days=14')]);
+  titles = Object.fromEntries(modules.map(m => [m.id, m.title]));
+  const done = quiz.answered === quiz.total;
+  const cta = quiz.answered === 0 ? 'Commencer le quiz' : done ? 'Revoir le quiz' : 'Continuer';
+  app.innerHTML = `
+    <div class="card hero">
+      <div class="row"><strong>Quiz du jour</strong><span class="muted small">${esc(fmtDate(quiz.date))}</span></div>
+      <p class="muted small">${quiz.total} questions choisies selon ton niveau : révisions et nouvelles questions un cran au-dessus.</p>
+      <div class="row small"><span>${quiz.answered}/${quiz.total} répondues</span><span>${quiz.correct} correctes</span></div>
+      <div class="bar"><i style="width:${pct(quiz.answered, quiz.total)}%"></i></div>
+      <p>${done ? `<strong class="ok">Terminé : ${quiz.correct}/${quiz.total}</strong> · reviens demain pour le suivant.` : ''}</p>
+      ${done ? '' : `<button class="primary" id="start">${cta}</button>`}
+    </div>
+
+    <h2>Ton niveau</h2>
+    ${levels.map(l => `<div class="card">
+      <div class="row"><strong>${esc(titles[l.moduleId] || l.moduleId)}</strong>
+        <span><span class="badge">${LEVELS[l.level]}</span> <span class="muted small">${l.rating} pts</span></span></div>
+      <div class="muted small">${l.calibrating ? `Calibrage en cours (${l.answers}/15 réponses)` : `${l.answers} réponses`}
+        ${l.level !== 'ARCHITECT' ? ` · vers ${LEVELS[l.nextLevel]} : ${l.progressToNextLevel}%` : ''}</div>
+      <div class="bar"><i style="width:${l.progressToNextLevel}%"></i></div>
+    </div>`).join('')}
+
+    <h2>Historique</h2>
+    ${history.length ? `<div class="card"><table>
+      <tr><th>Jour</th><th>Réponses</th><th>Réussite</th>${modules.map(m => `<th title="${esc(m.title)}">${esc(m.id.slice(0, 4))}</th>`).join('')}</tr>
+      ${history.slice().reverse().map(d => {
+        const byModule = Object.fromEntries(d.modules.map(m => [m.moduleId, m]));
+        return `<tr><td>${esc(new Date(d.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }))}</td>
+          <td>${d.answers}</td><td>${d.answers ? pct(d.correct, d.answers) + '%' : '-'}</td>
+          ${modules.map(m => `<td title="${esc(LEVELS[byModule[m.id]?.level] || '')}">${byModule[m.id]?.rating ?? '-'}</td>`).join('')}</tr>`;
+      }).join('')}
+    </table><p class="muted small">Bilan calculé chaque nuit : réponses de la journée et niveau (pts) de chaque module.</p></div>`
+      : '<p class="muted small">Le premier bilan apparaîtra demain, après le traitement de la nuit.</p>'}
+
+    <h2>Entraînement libre</h2>
+    <div class="grid">${modules.map(m => `<button data-module="${esc(m.id)}"><strong>${esc(m.title)}</strong><br><span class="muted small">${m.questionCount} questions</span></button>`).join('')}</div>`;
+  const start = document.getElementById('start');
+  if (start) start.onclick = dailyQuestion;
+  app.querySelectorAll('[data-module]').forEach(b => b.onclick = () => practice(b.dataset.module));
+}
+
+async function dailyQuestion() {
+  const quiz = await api('/api/daily');
+  const index = quiz.items.findIndex(i => !i.answered);
+  if (index < 0) return summary(quiz);
+  showQuestion(quiz.items[index], `Question ${index + 1}/${quiz.total}`, dailyQuestion);
+}
+
+async function practice(moduleId) {
+  const [q] = await api(`/api/practice/${encodeURIComponent(moduleId)}/next?count=1`);
+  if (!q) { app.innerHTML = '<div class="card">Rien à réviser aujourd\'hui dans ce module. Reviens demain !<p><button class="link" id="back">&larr; Accueil</button></p></div>'; document.getElementById('back').onclick = home; return; }
+  showQuestion({ ...q, moduleId }, `Entraînement · ${titles[moduleId] || moduleId}`, () => practice(moduleId));
+}
+
+function showQuestion(q, header, next) {
+  app.innerHTML = `<div class="card">
+    <div class="row"><span class="tag">${esc(header)}</span><span class="tag">${esc(titles[q.moduleId] || '')} · ${esc(q.topic)} · ${esc(LEVELS[q.level] || q.level)}</span></div>
+    <p><strong>${esc(q.prompt)}</strong></p>
+    <div class="choices">${q.choices.map((c, i) => `<button data-i="${i}">${esc(c)}</button>`).join('')}</div>
+    <div id="feedback"></div><p><button class="link" id="back">&larr; Accueil</button></p></div>`;
+  document.getElementById('back').onclick = home;
+  const buttons = [...app.querySelectorAll('[data-i]')];
+  buttons.forEach(b => b.onclick = async () => {
+    buttons.forEach(x => x.disabled = true);
+    const res = await api('/api/practice/answers', { method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ questionId: q.id, choice: Number(b.dataset.i) }) });
+    buttons[res.correctChoice].classList.add('ok');
+    if (!res.correct) b.classList.add('ko');
+    document.getElementById('feedback').innerHTML = `<p class="${res.correct ? 'ok' : 'ko'}"><strong>${res.correct ? 'Correct' : 'Incorrect'}</strong></p>
+      <p>${esc(res.explanation)}</p>
+      <p class="muted small">Niveau ${esc(titles[q.moduleId] || '')} : <strong>${LEVELS[res.level]}</strong> · ${Math.round(res.rating)} pts (${signed(Math.round(res.ratingDelta))})
+        · révision le ${esc(new Date(res.nextReviewOn + 'T12:00:00').toLocaleDateString('fr-FR'))}</p>
+      <button class="primary" id="next">Suivante &rarr;</button>`;
+    document.getElementById('next').onclick = next;
+  });
+}
+
+function summary(quiz) {
+  app.innerHTML = `<div class="card hero"><strong>Quiz du jour terminé</strong>
+    <p style="font-size:32px;margin:8px 0">${quiz.correct}/${quiz.total}</p>
+    <p class="muted">${quiz.correct >= quiz.total * 0.8 ? 'Excellent : les prochains quiz monteront d\'un cran.' : quiz.correct >= quiz.total * 0.5 ? 'Bien : tes erreurs reviendront en révision.' : 'Les questions ratées reviendront dès demain en révision.'}</p>
+    <button class="primary" id="back">Voir mon niveau</button></div>`;
+  document.getElementById('back').onclick = home;
+}
+
+home().catch(e => app.textContent = 'Erreur : ' + e.message);
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: upro
+  mvc:
+    problemdetails:
+      enabled: true
+  # En prod, Railway injecte SPRING_DATASOURCE_* (branche sur son service Postgres).
+  # En local, ces valeurs par defaut pointent vers le Postgres du docker-compose.yml.
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5434/upro}
+    username: ${SPRING_DATASOURCE_USERNAME:upro}
+    password: ${SPRING_DATASOURCE_PASSWORD:upro}
+
+# Railway fournit le port via la variable d'environnement PORT
+server:
+  port: ${PORT:8080}
+
+# Expose /actuator/health pour les health checks Railway
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+upro:
+  zone: Europe/Paris
+  content:
+    location: classpath:content/*.yml
+  daily:
+    # Nombre de questions du quiz du jour
+    size: 10
+    # Traitement quotidien : bilan de la veille + preparation du quiz (4h, heure de Paris)
+    cron: "0 0 4 * * *"

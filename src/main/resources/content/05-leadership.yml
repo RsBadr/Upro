@@ -1,0 +1,172 @@
+id: leadership
+title: Leadership & Soft skills
+description: Tech lead, staff engineer, mentoring, communication, influence sans autorite.
+questions:
+  - id: lead-staff-01
+    topic: Carriere
+    level: LEAD
+    prompt: Quelle difference principale entre un Senior developer et un Staff/Principal engineer ?
+    choices:
+      - Le Staff code plus vite
+      - Le Staff a un impact au-dela de son equipe (strategie technique, alignement inter-equipes, standards)
+      - Le Staff manage des personnes
+      - Aucune, c'est un titre honorifique
+    answer: 1
+    explanation: >
+      Le parcours "individual contributor" senior se mesure a l'etendue de l'impact : equipe -> plusieurs
+      equipes -> organisation. Lecture recommandee - "Staff Engineer" (Will Larson), "The Staff Engineer's Path" (Tanya Reilly).
+
+  - id: lead-estimation-01
+    topic: Communication
+    level: LEAD
+    prompt: Un manager vous demande une date de livraison ferme sur un sujet tres incertain. Que faire ?
+    choices:
+      - Donner une date optimiste pour faire plaisir
+      - Refuser de repondre
+      - Donner une fourchette avec hypotheses et risques, et proposer un spike pour reduire l'incertitude
+      - Multiplier son estimation par 3 sans rien dire
+    answer: 2
+    explanation: >
+      Rendre l'incertitude visible et proposer un moyen de la reduire construit la confiance.
+      Une estimation est une prevision, pas un engagement.
+
+  - id: lead-mentoring-01
+    topic: Mentoring
+    level: LEAD
+    prompt: Un developpeur junior est bloque depuis une journee. Quelle approche de mentoring est la plus formatrice ?
+    choices:
+      - Prendre le clavier et resoudre le probleme
+      - Poser des questions pour l'aider a raisonner, puis faire du pair programming si besoin
+      - Lui dire de chercher encore seul
+      - Reassigner la tache
+    answer: 1
+    explanation: >
+      Le questionnement guide fait progresser plus durablement que la solution donnee. Mettre aussi en place
+      une regle d'equipe - "bloque plus de X heures = on demande de l'aide".
+
+  - id: lead-tech-debt-01
+    topic: Dette technique
+    level: ARCHITECT
+    prompt: Comment obtenir du temps pour rembourser de la dette technique aupres du produit ?
+    choices:
+      - Le faire en cachette
+      - Traduire la dette en impact business mesurable (lead time, incidents, cout) et proposer un plan incremental
+      - Exiger une reecriture complete
+      - Attendre une crise
+    answer: 1
+    explanation: >
+      Parler le langage du business. Les metriques DORA (lead time, deployment frequency, change failure
+      rate, MTTR) sont un bon support.
+
+  - id: lead-decision-01
+    topic: Prise de decision
+    level: ARCHITECT
+    prompt: Quelle pratique aide le plus une organisation a ne pas reprendre sans cesse les memes debats techniques ?
+    choices:
+      - Laisser decider la personne la plus senior
+      - Documenter les decisions et leur contexte (ADR), avec les alternatives ecartees
+      - Ne rien ecrire pour rester agile
+      - Voter a main levee
+    answer: 1
+    explanation: >
+      Une decision documentee avec son contexte peut etre revisitee quand le contexte change, plutot que
+      re-debattue a chaque nouvel arrivant.
+
+  - id: lead-feedback-01
+    topic: Feedback
+    level: CONFIRMED
+    prompt: Un collegue vous fait une critique sur votre code en revue. Quelle reaction est la plus professionnelle ?
+    choices:
+      - Defendre son code point par point
+      - Chercher a comprendre le point de vue, remercier, et discuter si on n'est pas d'accord avec des arguments techniques
+      - Ignorer le commentaire
+      - Supprimer la PR
+    answer: 1
+    explanation: >
+      Separer son ego du code. Une critique sur le code n'est pas une critique de la personne.
+      Recevoir le feedback avec ouverture est la premiere etape avant de savoir en donner.
+
+  - id: lead-ownership-01
+    topic: Ownership
+    level: CONFIRMED
+    prompt: Vous decouvrez un bug en production sur un module que vous ne maintenez pas. Que faire ?
+    choices:
+      - Rien, ce n'est pas votre module
+      - Le signaler a l'equipe responsable avec les elements de reproduction, et proposer votre aide
+      - Le corriger directement en production sans prevenir
+      - En parler uniquement a la machine a cafe
+    answer: 1
+    explanation: >
+      L'ownership va au-dela de son perimetre : remonter l'information de facon actionnable
+      (contexte, impact, reproduction) est un signe de maturite valorise pour les postes seniors.
+
+  - id: lead-priorities-01
+    topic: Organisation
+    level: CONFIRMED
+    prompt: Vous etes sollicite en permanence par des demandes urgentes. Quelle approche est la plus saine ?
+    choices:
+      - Tout accepter et travailler le soir
+      - Rendre visible la charge, faire arbitrer les priorites par le responsable produit, et proteger des plages de concentration
+      - Refuser toutes les demandes
+      - Traiter les demandes dans l'ordre d'arrivee sans rien dire
+    answer: 1
+    explanation: >
+      L'urgence permanente cache souvent un probleme de priorisation. Rendre le travail visible (board, WIP)
+      permet d'arbitrer explicitement plutot que de subir.
+
+  - id: lead-onboarding-01
+    topic: Mentoring
+    level: SENIOR
+    prompt: Un nouvel arrivant rejoint l'equipe. Quelle action a le plus d'impact sur sa montee en competence ?
+    choices:
+      - Lui donner acces au wiki et le laisser seul
+      - Lui confier rapidement une premiere tache simple livree en production, avec un binome referent
+      - Attendre trois mois avant de lui confier du code
+      - Lui faire lire tout le code source
+    answer: 1
+    explanation: >
+      Livrer tot donne confiance et fait traverser toute la chaine (repo, CI, revue, deploiement).
+      Un referent et un document d'onboarding tenu a jour par chaque nouvel arrivant accelerent fortement.
+
+  - id: lead-conflict-01
+    topic: Communication
+    level: SENIOR
+    prompt: Deux developpeurs de l'equipe s'opposent fortement sur un choix technique. Que faire ?
+    choices:
+      - Laisser le plus ancien decider
+      - Ramener le debat sur des criteres objectifs (contraintes, risques, cout), timeboxer, decider et documenter
+      - Laisser chacun faire sa version
+      - Eviter le sujet
+    answer: 1
+    explanation: >
+      Expliciter les criteres depersonnalise le debat. "Disagree and commit" : une fois la decision prise
+      et documentee (ADR), tout le monde s'aligne, quitte a la reviser si le contexte change.
+
+  - id: lead-delegation-01
+    topic: Delegation
+    level: SENIOR
+    prompt: En devenant referent technique, vous continuez a prendre toutes les taches complexes vous-meme. Quel est le risque ?
+    choices:
+      - Aucun, c'est le plus efficace
+      - Devenir un goulot d'etranglement et empecher l'equipe de progresser (bus factor de 1)
+      - Les taches seront trop bien faites
+      - Le manager sera jaloux
+    answer: 1
+    explanation: >
+      Passer de "faire" a "faire faire" est la transition cle vers le role de lead. Deleguer les sujets
+      complexes avec accompagnement fait monter l'equipe et libere du temps pour les sujets transverses.
+
+  - id: lead-strategy-01
+    topic: Strategie technique
+    level: ARCHITECT
+    prompt: Comment construire une strategie technique credible pour une organisation ?
+    choices:
+      - Lister les technologies a la mode
+      - Partir d'un diagnostic de la situation et des objectifs business, definir des orientations directrices, puis des actions coherentes
+      - Copier la strategie d'une grande entreprise tech
+      - Laisser chaque equipe decider sans cadre
+    answer: 1
+    explanation: >
+      Le triptyque de Richard Rumelt ("Good Strategy Bad Strategy") - diagnostic, politique directrice,
+      actions coherentes - est repris par Will Larson pour l'ingenierie. Une strategie dit aussi ce qu'on
+      ne fera pas.

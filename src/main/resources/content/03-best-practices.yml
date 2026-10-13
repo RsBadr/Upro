@@ -1,0 +1,174 @@
+id: best-practices
+title: Best practices & Qualite
+description: Clean code, SOLID, tests, revue de code, securite, observabilite.
+questions:
+  - id: bp-solid-dip-01
+    topic: SOLID
+    level: CONFIRMED
+    prompt: Que dit le principe d'inversion de dependances (DIP) ?
+    choices:
+      - Les classes doivent avoir une seule responsabilite
+      - Les modules de haut niveau ne dependent pas des modules de bas niveau ; les deux dependent d'abstractions
+      - Une sous-classe doit pouvoir remplacer sa classe mere
+      - Il faut toujours utiliser un framework d'injection
+    answer: 1
+    explanation: >
+      Le DIP fait pointer les dependances vers les abstractions possedees par le code metier. L'injection
+      de dependances (Spring) n'est qu'un moyen technique de l'appliquer, pas le principe lui-meme.
+
+  - id: bp-testing-pyramid-01
+    topic: Tests
+    level: SENIOR
+    prompt: Un test d'integration avec la base echoue de facon aleatoire en CI. Quelle approche est la meilleure ?
+    choices:
+      - Ajouter @Disabled
+      - Relancer automatiquement 3 fois
+      - Identifier la source du non-determinisme (ordre, donnees partagees, temps, concurrence) et l'isoler (Testcontainers, Clock injectee, donnees par test)
+      - Supprimer le test
+    answer: 2
+    explanation: >
+      Un test flaky detruit la confiance dans la CI. Causes classiques : etat partage entre tests, dependance
+      a l'heure (d'ou la Clock injectee dans PracticeService), ordre d'execution, async sans attente explicite.
+
+  - id: bp-observability-01
+    topic: Observabilite
+    level: LEAD
+    prompt: Quels sont les trois piliers classiques de l'observabilite ?
+    choices:
+      - Logs, metriques, traces
+      - CPU, RAM, disque
+      - Tests unitaires, integration, e2e
+      - Dev, recette, prod
+    answer: 0
+    explanation: >
+      Logs (evenements), metriques (agregats numeriques, ex. Micrometer/Prometheus), traces distribuees
+      (OpenTelemetry). Un lead doit savoir definir des SLI/SLO et des alertes basees sur le symptome.
+
+  - id: bp-security-01
+    topic: Securite
+    level: SENIOR
+    prompt: Quelle est la protection de base contre l'injection SQL en Java ?
+    choices:
+      - Echapper les quotes a la main
+      - Utiliser des requetes parametrees (PreparedStatement, parametres JPA nommes)
+      - Valider la longueur des champs
+      - Utiliser HTTPS
+    answer: 1
+    explanation: >
+      Les requetes parametrees separent le code SQL des donnees. A connaitre aussi : OWASP Top 10,
+      gestion des secrets, dependances vulnerables (OWASP Dependency-Check, Dependabot).
+
+  - id: bp-code-review-01
+    topic: Revue de code
+    level: LEAD
+    prompt: En tant que lead, quel comportement en revue de code a le plus d'impact sur l'equipe ?
+    choices:
+      - Bloquer toutes les PR pour des questions de style
+      - Automatiser le style (formatter, linters) et concentrer la revue sur la conception, la lisibilite et les risques, en expliquant le pourquoi
+      - Ne pas faire de revue pour aller plus vite
+      - Reecrire soi-meme le code des autres
+    answer: 1
+    explanation: >
+      La revue est un outil de partage de connaissance. Automatiser ce qui peut l'etre, distinguer
+      bloquant / suggestion (nit), et justifier ses remarques font monter l'equipe en competence.
+
+  - id: bp-naming-01
+    topic: Clean code
+    level: CONFIRMED
+    prompt: Quelle methode respecte le mieux les principes de clean code ?
+    choices:
+      - "boolean check(User u) - verifie l'age et envoie un email de bienvenue"
+      - "boolean isAdult(User user) - indique si l'utilisateur a 18 ans ou plus"
+      - "boolean doIt(User x)"
+      - "boolean process(User u, boolean flag)"
+    answer: 1
+    explanation: >
+      Un nom revelateur d'intention, une seule responsabilite, pas d'effet de bord cache. Les parametres
+      booleens "flag" signalent souvent une methode qui fait deux choses.
+
+  - id: bp-git-01
+    topic: Git
+    level: CONFIRMED
+    prompt: Quelle pratique rend l'historique Git le plus utile a l'equipe ?
+    choices:
+      - Un seul commit "wip" par semaine
+      - Des commits petits et coherents, avec un message expliquant le pourquoi
+      - Commiter directement en production
+      - Ne jamais ecrire de message de commit
+    answer: 1
+    explanation: >
+      Un historique lisible facilite la revue, le bisect et la comprehension des choix passes.
+      Le diff montre le "quoi" ; le message doit expliquer le "pourquoi".
+
+  - id: bp-tdd-01
+    topic: Tests
+    level: SENIOR
+    prompt: Quel est le cycle du Test-Driven Development ?
+    choices:
+      - Coder, tester, deployer
+      - Red (ecrire un test qui echoue), Green (le faire passer simplement), Refactor (ameliorer le code)
+      - Ecrire tous les tests a la fin du sprint
+      - Tester uniquement en production
+    answer: 1
+    explanation: >
+      Le TDD pilote la conception par l'usage : le test est le premier client du code. Le refactoring se fait
+      sous filet de securite. Le benefice principal est souvent la conception (petites unites, dependances
+      explicites) plus que la couverture.
+
+  - id: bp-slo-01
+    topic: Fiabilite
+    level: LEAD
+    prompt: Une equipe a un SLO de 99,9 % de disponibilite mensuelle. Que represente le "budget d'erreur" ?
+    choices:
+      - Le budget financier alloue aux incidents
+      - Les ~43 minutes d'indisponibilite tolerees par mois ; s'il est consomme, on privilegie la fiabilite sur les nouvelles fonctionnalites
+      - Le nombre de bugs autorises en production
+      - Le temps de developpement d'une feature
+    answer: 1
+    explanation: >
+      0,1 % de 30 jours = ~43 minutes. Le budget d'erreur (pratique SRE de Google) objective l'arbitrage
+      vitesse/fiabilite : tant qu'il reste du budget on livre, sinon on stabilise.
+
+  - id: bp-quality-gates-01
+    topic: Industrialisation
+    level: ARCHITECT
+    prompt: Comment faire respecter des standards de qualite sur 15 equipes sans devenir un goulot d'etranglement ?
+    choices:
+      - Relire soi-meme toutes les PR
+      - Fournir des "paved roads" - templates de projet, regles automatisees en CI, outillage partage - et laisser les equipes autonomes
+      - Ecrire un document de 200 pages
+      - Sanctionner les equipes qui ne suivent pas les regles
+    answer: 1
+    explanation: >
+      A l'echelle, la qualite passe par l'automatisation et un chemin par defaut facile a suivre
+      (platform engineering) : starters, pipelines CI, linters, regles d'architecture testables.
+      L'architecte definit les garde-fous, pas chaque detail.
+
+  - id: bp-supply-chain-01
+    topic: Securite
+    level: ARCHITECT
+    prompt: Quelle mesure reduit le plus le risque de supply chain (dependances compromises ou vulnerables) ?
+    choices:
+      - Ne jamais mettre a jour les dependances
+      - Inventaire (SBOM), scan continu des vulnerabilites, mises a jour automatisees et depot d'artefacts controle
+      - Copier le code des librairies dans le projet
+      - Utiliser uniquement des versions SNAPSHOT
+    answer: 1
+    explanation: >
+      Log4Shell a montre l'importance de savoir ou une librairie est utilisee. SBOM (CycloneDX), scans
+      (Dependabot, OWASP Dependency-Check), Renovate pour les mises a jour, proxy d'artefacts et
+      verification des signatures en sont les briques.
+
+  - id: bp-feature-flags-01
+    topic: Livraison
+    level: ARCHITECT
+    prompt: Quel est l'interet principal des feature flags dans une strategie de livraison continue ?
+    choices:
+      - Remplacer les tests
+      - Decoupler le deploiement du code de l'activation de la fonctionnalite (dark launch, canary, rollback instantane)
+      - Eviter la revue de code
+      - Accelerer la compilation
+    answer: 1
+    explanation: >
+      On deploie souvent du code inactif et on active progressivement. Revers de la medaille : chaque flag
+      est de la dette ; il faut un cycle de vie (date de retrait, proprietaire) pour eviter l'accumulation.
